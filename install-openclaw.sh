@@ -248,34 +248,46 @@ setup_openclaw() {
     log "Installing OpenClaw dependencies..."
     pnpm install
     
-    # Apply our modifications (NVIDIA + MCP)
-    if [[ -d "$SCRIPT_DIR/modifications" ]]; then
-        log "Applying OpenClaw modifications..."
-        
-        # Copy modified command files
-        if [[ -d "$SCRIPT_DIR/modifications/openclaw-src/commands" ]]; then
-            cp -r "$SCRIPT_DIR/modifications/openclaw-src/commands/"* "$OPENCLAW_DIR/src/commands/"
-        fi
-        
-        # Copy modified ACP files
-        if [[ -d "$SCRIPT_DIR/modifications/openclaw-src/acp" ]]; then
-            cp -r "$SCRIPT_DIR/modifications/openclaw-src/acp/"* "$OPENCLAW_DIR/src/acp/"
-        fi
-        
-        # Copy MCP client plugin
-        if [[ -d "$SCRIPT_DIR/modifications/openclaw-extensions/mcp-client" ]]; then
-            rm -rf "$OPENCLAW_DIR/extensions/mcp-client"
-            cp -r "$SCRIPT_DIR/modifications/openclaw-extensions/mcp-client" "$OPENCLAW_DIR/extensions/"
-            
-            # Install MCP plugin dependencies
-            log "Installing MCP client plugin dependencies..."
-            cd "$OPENCLAW_DIR/extensions/mcp-client"
-            pnpm install
-            cd "$OPENCLAW_DIR"
-        fi
-        
-        success "Modifications applied"
+# Clone and apply our modifications (NVIDIA + MCP)
+  log "Cloning modifications from $MODIFICATIONS_REPO..."
+  MODS_TEMP_DIR=$(mktemp -d)
+  git clone --depth 1 "$MODIFICATIONS_REPO" "$MODS_TEMP_DIR"
+
+  if [[ -d "$MODS_TEMP_DIR/modifications" ]]; then
+    log "Applying OpenClaw modifications..."
+
+    # Copy modified command files
+    if [[ -d "$MODS_TEMP_DIR/modifications/openclaw-src/commands" ]]; then
+      cp -r "$MODS_TEMP_DIR/modifications/openclaw-src/commands/"* "$OPENCLAW_DIR/src/commands/"
+      log "Applied command modifications"
     fi
+
+    # Copy modified ACP files
+    if [[ -d "$MODS_TEMP_DIR/modifications/openclaw-src/acp" ]]; then
+      cp -r "$MODS_TEMP_DIR/modifications/openclaw-src/acp/"* "$OPENCLAW_DIR/src/acp/"
+      log "Applied ACP modifications"
+    fi
+
+    # Copy MCP client plugin
+    if [[ -d "$MODS_TEMP_DIR/modifications/openclaw-extensions/mcp-client" ]]; then
+      rm -rf "$OPENCLAW_DIR/extensions/mcp-client"
+      cp -r "$MODS_TEMP_DIR/modifications/openclaw-extensions/mcp-client" "$OPENCLAW_DIR/extensions/"
+      log "Applied MCP client plugin"
+
+      # Install MCP plugin dependencies
+      log "Installing MCP client plugin dependencies..."
+      cd "$OPENCLAW_DIR/extensions/mcp-client"
+      pnpm install
+      cd "$OPENCLAW_DIR"
+    fi
+
+    # Cleanup
+    rm -rf "$MODS_TEMP_DIR"
+
+    success "Modifications applied"
+  else
+    warn "No modifications directory found in $MODIFICATIONS_REPO"
+  fi
     
     # Build OpenClaw
     log "Building OpenClaw..."

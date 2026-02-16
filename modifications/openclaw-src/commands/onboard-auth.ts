@@ -31,6 +31,7 @@ export {
   applyVercelAiGatewayProviderConfig,
   applyNvidiaConfig,
   applyNvidiaProviderConfig,
+  NVIDIA_DEFAULT_MODEL_REF,
   applyXaiConfig,
   applyXaiProviderConfig,
   applyXiaomiConfig,
