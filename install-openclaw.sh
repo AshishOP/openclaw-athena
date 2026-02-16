@@ -156,9 +156,9 @@ install_pnpm() {
     success "pnpm installed"
 }
 
-# Setup Athena
+# Setup Athena (LIGHTWEIGHT - only MCP server deps)
 setup_athena() {
-    log "Setting up Athena..."
+    log "Setting up Athena (Lightweight - MCP Server Only)..."
     
     if [[ -d "$ATHENA_DIR" ]]; then
         warn "Athena directory already exists at $ATHENA_DIR"
@@ -177,8 +177,16 @@ setup_athena() {
         python3 -m venv "$ATHENA_DIR/venv"
         source "$ATHENA_DIR/venv/bin/activate"
         
-        log "Installing Athena Python dependencies in virtual environment..."
-        pip install -e .
+        # Install LIGHTWEIGHT dependencies only (no torch, no heavy ML deps!)
+        log "Installing LIGHTWEIGHT Athena dependencies (no PyTorch)..."
+        pip install \
+            fastmcp \
+            python-dotenv \
+            pydantic \
+            requests \
+            uvicorn \
+            httpx \
+            || error "Failed to install lightweight Athena dependencies"
         
         # Create activation script for systemd/service
         cat > "$ATHENA_DIR/activate-venv.sh" << EOF
@@ -189,8 +197,16 @@ exec python -m athena.mcp_server "\$@"
 EOF
         chmod +x "$ATHENA_DIR/activate-venv.sh"
     else
-        log "Installing Athena Python dependencies..."
-        pip3 install -e .
+        # Install LIGHTWEIGHT dependencies only (no torch, no heavy ML deps!)
+        log "Installing LIGHTWEIGHT Athena dependencies (no PyTorch)..."
+        pip3 install \
+            fastmcp \
+            python-dotenv \
+            pydantic \
+            requests \
+            uvicorn \
+            httpx \
+            || error "Failed to install lightweight Athena dependencies"
     fi
     
     # Create necessary directories
@@ -199,7 +215,7 @@ EOF
     
     # Create Athena environment file
     cat > "$ATHENA_DIR/.env" << EOF
-# Athena Configuration
+# Athena Configuration (Lightweight Mode)
 ATHENA_MODE=local
 ATHENA_LOCAL_DB_PATH=${ATHENA_DIR}/.context/vectorstore
 PYTHONPATH=${ATHENA_DIR}/src
@@ -208,7 +224,7 @@ EOF
     # Create directories for local storage
     mkdir -p "$ATHENA_DIR/.context/vectorstore"
     
-    success "Athena installed at $ATHENA_DIR"
+    success "Athena (Lightweight) installed at $ATHENA_DIR"
 }
 
 # Setup OpenClaw
