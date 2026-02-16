@@ -1,14 +1,14 @@
-import type { OpenClawConfig } from "../../config/config.js";
-import type { RuntimeEnv } from "../../runtime.js";
-import type { AuthChoice, OnboardOptions } from "../onboard-types.js";
-import { upsertAuthProfile } from "../../agents/auth-profiles.js";
-import { normalizeProviderId } from "../../agents/model-selection.js";
-import { parseDurationMs } from "../../cli/parse-duration.js";
-import { upsertSharedEnvVar } from "../../infra/env-file.js";
-import { shortenHomePath } from "../../utils.js";
-import { normalizeSecretInput } from "../../utils/normalize-secret-input.js";
-import { buildTokenProfileId, validateAnthropicSetupToken } from "../auth-token.js";
-import { applyGoogleGeminiModelDefault } from "../google-gemini-model-default.js";
+import type { OpenClawConfig } from "../../../config/config.js";
+import type { RuntimeEnv } from "../../../runtime.js";
+import type { AuthChoice, OnboardOptions } from "../../onboard-types.js";
+import { upsertAuthProfile } from "../../../agents/auth-profiles.js";
+import { normalizeProviderId } from "../../../agents/model-selection.js";
+import { parseDurationMs } from "../../../cli/parse-duration.js";
+import { upsertSharedEnvVar } from "../../../infra/env-file.js";
+import { shortenHomePath } from "../../../utils.js";
+import { normalizeSecretInput } from "../../../utils/normalize-secret-input.js";
+import { buildTokenProfileId, validateAnthropicSetupToken } from "../../auth-token.js";
+import { applyGoogleGeminiModelDefault } from "../../google-gemini-model-default.js";
 import {
   applyAuthProfileConfig,
   applyCloudflareAiGatewayConfig,
@@ -50,16 +50,16 @@ import {
   setVercelAiGatewayApiKey,
   setXiaomiApiKey,
   setZaiApiKey,
-} from "../onboard-auth.js";
+} from "../../onboard-auth.js";
 import {
   applyCustomApiConfig,
   CustomApiError,
   parseNonInteractiveCustomApiFlags,
   resolveCustomProviderId,
-} from "../onboard-custom.js";
-import { applyOpenAIConfig } from "../openai-model-default.js";
-import { detectZaiEndpoint } from "../zai-endpoint-detect.js";
-import { resolveNonInteractiveApiKey } from "./api-keys.js";
+} from "../../onboard-custom.js";
+import { applyOpenAIConfig } from "../../openai-model-default.js";
+import { detectZaiEndpoint } from "../../zai-endpoint-detect.js";
+import { resolveNonInteractiveApiKey } from "../api-keys.js";
 
 export async function applyNonInteractiveAuthChoice(params: {
   nextConfig: OpenClawConfig;
