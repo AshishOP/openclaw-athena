@@ -289,6 +289,10 @@ OPENCLAW_GATEWAY_PORT=18789
 ATHENA_PATH=${ATHENA_DIR}
 NVIDIA_API_KEY=${NVIDIA_API_KEY}
 EOF
+
+    # Create minimal config for gateway
+    mkdir -p ~/.openclaw
+    echo '{"gateway":{"mode":"local"}}' > ~/.openclaw/openclaw.json
     
     success "OpenClaw installed at $OPENCLAW_DIR"
 }
