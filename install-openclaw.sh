@@ -5,6 +5,9 @@
 
 set -e
 
+# Ensure we start from a valid directory
+cd /
+
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
