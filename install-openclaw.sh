@@ -242,19 +242,40 @@ setup_openclaw() {
     
     cd "$OPENCLAW_DIR"
     
+    # Get the directory where this install script is located
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    
     log "Installing OpenClaw dependencies..."
     pnpm install
     
-    # Install MCP client plugin dependencies
-    if [[ -d "extensions/mcp-client" ]]; then
-        log "Installing MCP client plugin dependencies..."
-        cd extensions/mcp-client
-        pnpm install
-        cd "$OPENCLAW_DIR"
+    # Apply our modifications (NVIDIA + MCP)
+    if [[ -d "$SCRIPT_DIR/modifications" ]]; then
+        log "Applying OpenClaw modifications..."
+        
+        # Copy modified command files
+        if [[ -d "$SCRIPT_DIR/modifications/openclaw-src/commands" ]]; then
+            cp -r "$SCRIPT_DIR/modifications/openclaw-src/commands/"* "$OPENCLAW_DIR/src/commands/"
+        fi
+        
+        # Copy modified ACP files
+        if [[ -d "$SCRIPT_DIR/modifications/openclaw-src/acp" ]]; then
+            cp -r "$SCRIPT_DIR/modifications/openclaw-src/acp/"* "$OPENCLAW_DIR/src/acp/"
+        fi
+        
+        # Copy MCP client plugin
+        if [[ -d "$SCRIPT_DIR/modifications/openclaw-extensions/mcp-client" ]]; then
+            rm -rf "$OPENCLAW_DIR/extensions/mcp-client"
+            cp -r "$SCRIPT_DIR/modifications/openclaw-extensions/mcp-client" "$OPENCLAW_DIR/extensions/"
+            
+            # Install MCP plugin dependencies
+            log "Installing MCP client plugin dependencies..."
+            cd "$OPENCLAW_DIR/extensions/mcp-client"
+            pnpm install
+            cd "$OPENCLAW_DIR"
+        fi
+        
+        success "Modifications applied"
     fi
-    
-    # Apply NVIDIA modifications
-    apply_nvidia_modifications
     
     # Build OpenClaw
     log "Building OpenClaw..."
