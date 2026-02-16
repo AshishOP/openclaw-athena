@@ -84,6 +84,21 @@ install_dependencies() {
             make \
             sqlite-devel \
             || error "Failed to install dependencies"
+    elif [[ "$OS" == "cachyos" ]] || [[ "$OS" == "arch" ]] || [[ "$OS" == "manjaro" ]]; then
+        log "Arch-based system detected. Installing dependencies with pacman..."
+        pacman -Sy --noconfirm --needed \
+            curl \
+            wget \
+            git \
+            python \
+            python-pip \
+            python-venv \
+            nodejs \
+            npm \
+            gcc \
+            make \
+            sqlite \
+            || error "Failed to install dependencies"
     elif [[ "$OS" == "macos" ]]; then
         if ! command -v brew &> /dev/null; then
             error "Homebrew not found. Please install Homebrew first."
@@ -156,8 +171,27 @@ setup_athena() {
     
     cd "$ATHENA_DIR"
     
-    log "Installing Athena Python dependencies..."
-    pip3 install -e .
+    # For Arch-based systems, use virtual environment due to PEP 668
+    if [[ "$OS" == "cachyos" ]] || [[ "$OS" == "arch" ]] || [[ "$OS" == "manjaro" ]]; then
+        log "Arch-based system detected. Creating virtual environment for Athena..."
+        python3 -m venv "$ATHENA_DIR/venv"
+        source "$ATHENA_DIR/venv/bin/activate"
+        
+        log "Installing Athena Python dependencies in virtual environment..."
+        pip install -e .
+        
+        # Create activation script for systemd/service
+        cat > "$ATHENA_DIR/activate-venv.sh" << EOF
+#!/bin/bash
+source ${ATHENA_DIR}/venv/bin/activate
+export PYTHONPATH=${ATHENA_DIR}/src
+exec python -m athena.mcp_server "\$@"
+EOF
+        chmod +x "$ATHENA_DIR/activate-venv.sh"
+    else
+        log "Installing Athena Python dependencies..."
+        pip3 install -e .
+    fi
     
     # Create necessary directories
     mkdir -p "$ATHENA_DIR/.context/memories/session_logs"
@@ -711,6 +745,13 @@ create_services() {
     if command -v systemctl &> /dev/null; then
         log "Creating systemd services..."
         
+        # Determine Athena Python command based on OS
+        if [[ "$OS" == "cachyos" ]] || [[ "$OS" == "arch" ]] || [[ "$OS" == "manjaro" ]]; then
+            ATHENA_PYTHON_CMD="${ATHENA_DIR}/activate-venv.sh"
+        else
+            ATHENA_PYTHON_CMD="/usr/bin/python3"
+        fi
+        
         # Athena MCP service
         cat > /etc/systemd/system/athena-mcp.service << EOF
 [Unit]
@@ -724,7 +765,7 @@ WorkingDirectory=${ATHENA_DIR}
 Environment=PYTHONPATH=${ATHENA_DIR}/src
 Environment=ATHENA_MODE=local
 Environment=ATHENA_LOCAL_DB_PATH=${ATHENA_DIR}/.context/vectorstore
-ExecStart=/usr/bin/python3 -m athena.mcp_server
+ExecStart=${ATHENA_PYTHON_CMD}
 Restart=always
 RestartSec=5
 
@@ -763,9 +804,16 @@ EOF
         
         mkdir -p /etc/supervisor/conf.d
         
+        # Determine Athena Python command based on OS
+        if [[ "$OS" == "cachyos" ]] || [[ "$OS" == "arch" ]] || [[ "$OS" == "manjaro" ]]; then
+            ATHENA_SUPERVISOR_CMD="${ATHENA_DIR}/activate-venv.sh"
+        else
+            ATHENA_SUPERVISOR_CMD="python3 -m athena.mcp_server"
+        fi
+        
         cat > /etc/supervisor/conf.d/athena.conf << EOF
 [program:athena-mcp]
-command=python3 -m athena.mcp_server
+command=${ATHENA_SUPERVISOR_CMD}
 directory=${ATHENA_DIR}
 environment=PYTHONPATH="${ATHENA_DIR}/src",ATHENA_MODE="local",ATHENA_LOCAL_DB_PATH="${ATHENA_DIR}/.context/vectorstore"
 autostart=true
@@ -803,7 +851,14 @@ export NVIDIA_API_KEY=${NVIDIA_API_KEY}
 
 echo "Starting Athena MCP Server..."
 cd ${ATHENA_DIR}
-python3 -m athena.mcp_server &
+
+if [[ -f "${ATHENA_DIR}/activate-venv.sh" ]]; then
+    # Arch-based system - use virtual environment
+    ${ATHENA_DIR}/activate-venv.sh &
+else
+    # Other systems - use system python
+    python3 -m athena.mcp_server &
+fi
 ATHENA_PID=\$!
 
 echo "Starting OpenClaw..."
