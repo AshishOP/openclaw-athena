@@ -824,7 +824,7 @@ WorkingDirectory=${OPENCLAW_DIR}
 Environment=NODE_ENV=production
 Environment=ATHENA_PATH=${ATHENA_DIR}
 Environment=OPENCLAW_GATEWAY_PORT=18789
-ExecStart=/usr/bin/node ${OPENCLAW_DIR}/dist/cli/index.js gateway run --bind 0.0.0.0 --port 18789
+ExecStart=/usr/bin/node ${OPENCLAW_DIR}/openclaw.mjs gateway run --bind 0.0.0.0 --port 18789
 Restart=always
 RestartSec=10
 
@@ -861,7 +861,7 @@ EOF
 
         cat > /etc/supervisor/conf.d/openclaw.conf << EOF
 [program:openclaw]
-command=node ${OPENCLAW_DIR}/dist/cli/index.js gateway run --bind 0.0.0.0 --port 18789
+command=node ${OPENCLAW_DIR}/openclaw.mjs gateway run --bind 0.0.0.0 --port 18789
 directory=${OPENCLAW_DIR}
 environment=NODE_ENV="production",ATHENA_PATH="${ATHENA_DIR}",OPENCLAW_GATEWAY_PORT="18789"
 autostart=true
@@ -900,7 +900,7 @@ ATHENA_PID=\$!
 
 echo "Starting OpenClaw..."
 cd ${OPENCLAW_DIR}
-node dist/cli/index.js gateway run --bind 0.0.0.0 --port 18789 &
+node openclaw.mjs gateway run --bind 0.0.0.0 --port 18789 &
 OPENCLAW_PID=\$!
 
 echo "Services started!"
