@@ -231,11 +231,15 @@ EOF
 setup_openclaw() {
     log "Setting up OpenClaw..."
     
+    # Clean up any old backups first
     if [[ -d "$OPENCLAW_DIR" ]]; then
         warn "OpenClaw directory already exists at $OPENCLAW_DIR"
         warn "Backing up existing installation..."
         mv "$OPENCLAW_DIR" "${OPENCLAW_DIR}.backup.$(date +%s)"
     fi
+    
+    # Also clean up old backup directories that may have permission issues
+    rm -rf "${OPENCLAW_DIR}.backup."* 2>/dev/null || true
     
     log "Cloning OpenClaw from $OPENCLAW_REPO..."
     git clone "$OPENCLAW_REPO" "$OPENCLAW_DIR"
