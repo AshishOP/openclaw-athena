@@ -918,8 +918,13 @@ create_helper_scripts() {
 #!/bin/bash
 # Start OpenClaw and Athena
 
+# Kill any existing processes first
+pkill -f "athena.mcp_server" 2>/dev/null || true
+pkill -f "openclaw.mjs gateway" 2>/dev/null || true
+pkill -9 -f "openclaw-gateway" 2>/dev/null || true
+sleep 2
+
 export ATHENA_PATH=${ATHENA_DIR}
-export NVIDIA_API_KEY=${NVIDIA_API_KEY}
 
 echo "Starting Athena MCP Server..."
 cd ${ATHENA_DIR}
@@ -944,7 +949,7 @@ echo "OpenClaw PID: \$OPENCLAW_PID"
 echo ""
 echo "Access OpenClaw at: http://localhost:18789"
 echo ""
-echo "To stop, run: kill \$ATHENA_PID \$OPENCLAW_PID"
+echo "To stop, run: ./stop.sh"
 EOF
     chmod +x "$OPENCLAW_DIR/start.sh"
     
@@ -953,9 +958,13 @@ EOF
 #!/bin/bash
 # Stop OpenClaw and Athena
 
-pkill -f "athena.mcp_server" || true
-pkill -f "openclaw" || true
-
+echo "Stopping services..."
+pkill -9 -f "athena.mcp_server" 2>/dev/null || true
+pkill -9 -f "openclaw.mjs gateway" 2>/dev/null || true
+pkill -9 -f "openclaw-gateway" 2>/dev/null || true
+pkill -9 -f "openclaw" 2>/dev/null || true
+systemctl --user stop openclaw-gateway 2>/dev/null || true
+sleep 1
 echo "Services stopped"
 EOF
     chmod +x "$OPENCLAW_DIR/stop.sh"
