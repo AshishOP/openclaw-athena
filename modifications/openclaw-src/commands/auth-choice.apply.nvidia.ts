@@ -77,18 +77,15 @@ export async function applyAuthChoiceNVIDIA(
   });
 
   {
-    const applied = await applyDefaultModelChoice({
-      config: nextConfig,
-      setDefaultModel: params.setDefaultModel,
-      defaultModel: String(selectedModel),
-      applyDefaultConfig: applyNvidiaConfig,
-      applyProviderConfig: applyNvidiaProviderConfig,
-      noteDefault: String(selectedModel),
-      noteAgentModel,
-      prompter: params.prompter,
-    });
-    nextConfig = applied.config;
-    agentModelOverride = applied.agentModelOverride ?? agentModelOverride;
+    // Apply the provider configuration with all models
+    nextConfig = applyNvidiaProviderConfig(nextConfig);
+    
+    // Set the selected model as the default
+    nextConfig = applyNvidiaConfig(nextConfig);
+    
+    // Override with the specific model the user selected
+    await noteAgentModel(String(selectedModel));
+    agentModelOverride = String(selectedModel);
   }
 
   return { config: nextConfig, agentModelOverride };
