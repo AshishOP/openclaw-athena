@@ -300,6 +300,18 @@ setup_openclaw() {
     log "Building OpenClaw..."
     pnpm build
     
+    # Fix permissions so the user can run openclaw
+    log "Fixing permissions..."
+    if [[ -n "${SUDO_USER:-}" ]]; then
+        chown -R "$SUDO_USER:$SUDO_USER" "$OPENCLAW_DIR"
+    else
+        # Try to detect the actual user
+        REAL_USER="${USER:-$(whoami)}"
+        if [[ "$REAL_USER" != "root" ]]; then
+            chown -R "$REAL_USER:$REAL_USER" "$OPENCLAW_DIR"
+        fi
+    fi
+    
     # Create environment file
     cat > "$OPENCLAW_DIR/.env" << EOF
 # OpenClaw Configuration
