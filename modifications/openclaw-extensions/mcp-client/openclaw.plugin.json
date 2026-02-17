@@ -4,5 +4,15 @@
   "version": "2026.2.16",
   "description": "MCP client plugin for OpenClaw - connects to Athena and other MCP servers",
   "entry": "./index.ts",
-  "type": "extension"
+  "type": "extension",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "enabled": {
+        "type": "boolean",
+        "default": true
+      }
+    }
+  }
 }
