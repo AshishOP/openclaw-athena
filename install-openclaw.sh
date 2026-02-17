@@ -275,6 +275,12 @@ setup_openclaw() {
       log "Applied ACP modifications"
     fi
 
+    # Copy modified agents files (including model-selection.ts fix for z-ai provider)
+    if [[ -d "$MODS_TEMP_DIR/modifications/openclaw-src/agents" ]]; then
+      cp -r "$MODS_TEMP_DIR/modifications/openclaw-src/agents/"* "$OPENCLAW_DIR/src/agents/"
+      log "Applied agents modifications (z-ai provider fix)"
+    fi
+
     # Copy MCP client plugin
     if [[ -d "$MODS_TEMP_DIR/modifications/openclaw-extensions/mcp-client" ]]; then
       rm -rf "$OPENCLAW_DIR/extensions/mcp-client"
