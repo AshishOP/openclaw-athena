@@ -4,6 +4,12 @@ export {
 } from "../agents/synthetic-models.js";
 export { VENICE_DEFAULT_MODEL_ID, VENICE_DEFAULT_MODEL_REF } from "../agents/venice-models.js";
 export {
+  NVIDIA_MODEL_CATALOG,
+  NVIDIA_DEFAULT_MODEL_REF,
+  NVIDIA_DEFAULT_MODEL_ID,
+  NVIDIA_BASE_URL,
+} from "./nvidia-models.js";
+export {
   applyAuthProfileConfig,
   applyCloudflareAiGatewayConfig,
   applyCloudflareAiGatewayProviderConfig,

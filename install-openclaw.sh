@@ -312,13 +312,13 @@ setup_openclaw() {
         fi
     fi
     
-    # Create environment file
+    # Create environment file (API keys stored securely via onboard, not here)
     cat > "$OPENCLAW_DIR/.env" << EOF
 # OpenClaw Configuration
 NODE_ENV=production
 OPENCLAW_GATEWAY_PORT=18789
 ATHENA_PATH=${ATHENA_DIR}
-NVIDIA_API_KEY=${NVIDIA_API_KEY}
+# Run 'openclaw onboard' to configure NVIDIA and other providers
 EOF
 
     # Create minimal config for gateway
@@ -1049,9 +1049,21 @@ finalize() {
     echo "  - athena_set_secret_mode   : Toggle demo mode"
     echo "  - athena_permission_status : Show access state"
     echo ""
-    echo "Test with NVIDIA:"
-    echo "  openclaw onboard --auth-choice nvidia-api-key"
+    echo "Configure OpenClaw (Interactive Setup):"
+    echo "  openclaw onboard                    # Interactive wizard"
+    echo "  - Select NVIDIA as your provider"
+    echo "  - Enter your NVIDIA API key"
+    echo "  - Choose from 10 available models:"
+    echo "    * NVIDIA Llama 3.1 Nemotron 70B"
+    echo "    * Meta Llama 3.3 70B"
+    echo "    * KIMI K2, K2.5, and variants"
+    echo "    * Z.AI GLM-4.7, GLM-5"
+    echo "    * THUDM ChatGLM3"
     echo ""
+    echo "Or configure manually:"
+    echo "  openclaw onboard --auth-choice nvidia-api-key --nvidia-api-key YOUR_KEY"
+    echo ""
+    echo "Default model: z-ai/glm5"
     echo "========================================"
 }
 

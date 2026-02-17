@@ -12,8 +12,11 @@ import {
   applyNvidiaConfig,
   applyNvidiaProviderConfig,
   setNvidiaApiKey,
-  NVIDIA_DEFAULT_MODEL_REF,
 } from "./onboard-auth.js";
+import {
+  NVIDIA_MODEL_CATALOG,
+  NVIDIA_DEFAULT_MODEL_REF,
+} from "./nvidia-models.js";
 
 export async function applyAuthChoiceNVIDIA(
   params: ApplyAuthChoiceParams,
@@ -55,19 +58,32 @@ export async function applyAuthChoiceNVIDIA(
     setNvidiaApiKey(normalizeApiKeyInput(String(key)), params.agentDir);
   }
 
+  // Prompt user to select a model from the catalog
+  const modelChoices = NVIDIA_MODEL_CATALOG.map((model) => ({
+    value: model.id,
+    label: model.name,
+  }));
+
+  const selectedModel = await params.prompter.select({
+    message: "Select NVIDIA model",
+    options: modelChoices,
+    initialValue: NVIDIA_DEFAULT_MODEL_REF,
+  });
+
   nextConfig = applyAuthProfileConfig(nextConfig, {
     profileId: "nvidia:default",
     provider: "nvidia",
     mode: "api_key",
   });
+
   {
     const applied = await applyDefaultModelChoice({
       config: nextConfig,
       setDefaultModel: params.setDefaultModel,
-      defaultModel: NVIDIA_DEFAULT_MODEL_REF,
+      defaultModel: String(selectedModel),
       applyDefaultConfig: applyNvidiaConfig,
       applyProviderConfig: applyNvidiaProviderConfig,
-      noteDefault: NVIDIA_DEFAULT_MODEL_REF,
+      noteDefault: String(selectedModel),
       noteAgentModel,
       prompter: params.prompter,
     });
